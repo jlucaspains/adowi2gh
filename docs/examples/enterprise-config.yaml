@@ -1,0 +1,67 @@
+# GitHub Enterprise Configuration Example
+
+azure_devops:
+  organization_url: "https://dev.azure.com/company"
+  personal_access_token: "${ADO_PAT}"  # Use environment variable
+  project: "MainProject"
+  
+  query:
+    wiql: |
+      SELECT [System.Id]
+      FROM WorkItems 
+      WHERE [System.TeamProject] = 'MainProject'
+        AND [System.WorkItemType] IN ('Bug', 'User Story', 'Task', 'Feature')
+        AND [System.State] NOT IN ('Removed', 'Closed')
+        AND [System.CreatedDate] >= '2024-01-01'
+      ORDER BY [System.Id]
+
+github:
+  token: "${GITHUB_TOKEN}"  # Use environment variable
+  owner: "company-org"
+  repository: "main-product"
+  base_url: "https://github.company.com/api/v3"  # GitHub Enterprise URL
+
+migration:
+  batch_size: 30  
+  field_mapping:
+    state_mapping:
+      "New": "open"
+      "Active": "open"
+      "Resolved": "open"
+      "Done": "closed"
+      "Closed": "closed"
+    
+    type_mapping:
+      "Bug": ["bug", "needs-triage"]
+      "User Story": ["enhancement", "user-story"]
+      "Task": ["task"]
+      "Feature": ["feature", "enhancement"]
+      "Epic": ["epic"]
+    
+    priority_mapping:
+      "1": ["priority:critical", "urgent"]
+      "2": ["priority:high"]
+      "3": ["priority:medium"]
+      "4": ["priority:low"]
+    
+    label_mapping:
+      "1 - Critical": ["severity:critical"]
+      "2 - High": ["severity:high"]
+      "3 - Medium": ["severity:medium"]
+      "4 - Low": ["severity:low"]
+  
+  user_mapping:
+    "john.doe@company.com": "john-doe"
+    "jane.smith@company.com": "jane-smith"
+    "admin@company.com": "admin-user"
+  
+  dry_run: false
+  include_comments: true
+  include_attachments: false
+  create_milestones: true
+  resume_from_checkpoint: false
+
+logging:
+  level: "info"
+  format: "json"
+  output_file: "logs/migration.log"

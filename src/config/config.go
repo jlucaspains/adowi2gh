@@ -72,10 +72,6 @@ func LoadConfig(configPath string) (*Config, error) {
 		viper.AddConfigPath("$HOME/.ado-gh-migrator")
 	}
 
-	// Environment variable overrides
-	viper.SetEnvPrefix("ADO_GH")
-	viper.AutomaticEnv()
-
 	// Set defaults
 	setDefaults()
 

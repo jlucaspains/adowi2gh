@@ -3,11 +3,12 @@ package migration
 import (
 	"fmt"
 	"log/slog"
-	"regexp"
 	"strings"
 
 	"ado-gh-wi-migrator/config"
 	"ado-gh-wi-migrator/models"
+
+	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 )
 
 // Mapper handles the mapping between ADO work items and GitHub issues
@@ -187,14 +188,6 @@ func (m *Mapper) mapAssignees(workItem *models.WorkItem) []string {
 		}
 	}
 
-	// If no mapping found, try to extract GitHub username from email
-	if assignedTo.Email != "" {
-		githubUser := m.extractGitHubUsernameFromEmail(assignedTo.Email)
-		if githubUser != "" {
-			assignees = append(assignees, githubUser)
-		}
-	}
-
 	return assignees
 }
 
@@ -220,90 +213,22 @@ func (m *Mapper) MapComments(workItemComments []models.WorkItemComment) []models
 	return githubComments
 }
 
-// cleanHtmlContent removes or converts HTML content to Markdown
+// removes or converts HTML content to Markdown
 func (m *Mapper) cleanHtmlContent(content string) string {
 	if content == "" {
 		return ""
 	}
 
 	// Basic HTML to Markdown conversion
-	content = m.convertHtmlToMarkdown(content)
+	content, err := htmltomarkdown.ConvertString(content)
+	if err != nil {
+		return ""
+	}
 
 	// Remove extra whitespace
 	content = strings.TrimSpace(content)
 
 	return content
-}
-
-// convertHtmlToMarkdown performs basic HTML to Markdown conversion
-func (m *Mapper) convertHtmlToMarkdown(html string) string {
-	// This is a simplified conversion - you might want to use a proper HTML to Markdown library
-	// TODO: improve html to markdown conversion
-
-	// Convert common HTML tags
-	replacements := map[string]string{
-		"<br>":      "\n",
-		"<br/>":     "\n",
-		"<br />":    "\n",
-		"<p>":       "\n",
-		"</p>":      "\n",
-		"<strong>":  "**",
-		"</strong>": "**",
-		"<b>":       "**",
-		"</b>":      "**",
-		"<em>":      "*",
-		"</em>":     "*",
-		"<i>":       "*",
-		"</i>":      "*",
-		"<ul>":      "\n",
-		"</ul>":     "\n",
-		"<ol>":      "\n",
-		"</ol>":     "\n",
-		"<li>":      "- ",
-		"</li>":     "\n",
-	}
-
-	result := html
-	for htmlTag, markdown := range replacements {
-		result = strings.ReplaceAll(result, htmlTag, markdown)
-	}
-
-	// Remove remaining HTML tags
-	re := regexp.MustCompile(`<[^>]*>`)
-	result = re.ReplaceAllString(result, "")
-
-	// Clean up multiple newlines
-	re = regexp.MustCompile(`\n\s*\n\s*\n`)
-	result = re.ReplaceAllString(result, "\n\n")
-
-	return strings.TrimSpace(result)
-}
-
-// extractGitHubUsernameFromEmail tries to extract a GitHub username from an email
-func (m *Mapper) extractGitHubUsernameFromEmail(email string) string {
-	if email == "" {
-		return ""
-	}
-
-	// If email is from GitHub, extract username
-	if strings.HasSuffix(email, "@users.noreply.github.com") {
-		parts := strings.Split(email, "@")
-		if len(parts) > 0 {
-			return parts[0]
-		}
-	}
-
-	// Extract username part from email (before @)
-	parts := strings.Split(email, "@")
-	if len(parts) > 0 {
-		username := parts[0]
-		// Clean up username (GitHub usernames can only contain alphanumeric characters and hyphens)
-		re := regexp.MustCompile(`[^a-zA-Z0-9-]`)
-		username = re.ReplaceAllString(username, "-")
-		return username
-	}
-
-	return ""
 }
 
 // deduplicateLabels removes duplicate labels while preserving order

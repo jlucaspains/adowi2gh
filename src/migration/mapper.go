@@ -222,6 +222,7 @@ func (m *Mapper) cleanHtmlContent(content string) string {
 	// Basic HTML to Markdown conversion
 	content, err := htmltomarkdown.ConvertString(content)
 	if err != nil {
+		m.logger.Error("Failed to convert HTML to Markdown", "error", err, "content", content)
 		return ""
 	}
 

@@ -44,10 +44,11 @@ jobs:
         working-directory: ./src
       
       - name: Test
-        run: go test -cover ./... > test-result.txt
+        run: go test -coverprofile=coverage.txt ./...
         working-directory: ./src
       
-      - name: Pull request comment
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          path: ./src/test-result.txt
+          token: ${{ secrets.CODECOV_TOKEN }}
+      

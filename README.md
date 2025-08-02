@@ -27,8 +27,8 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 
 ```bash
 git clone <repository-url>
-cd ado-gh-wi-migrator
-go build -o ado-gh-wi-migrator ./cmd/migrate
+cd adowi2gh
+go build -o adowi2gh ./cmd/migrate
 ```
 
 ### Using Go Install
@@ -41,7 +41,7 @@ go install ./cmd/migrate
 
 1. **Initialize Configuration**
    ```bash
-   ./ado-gh-wi-migrator config init
+   ./adowi2gh config init
    ```
 
 2. **Edit Configuration**
@@ -60,16 +60,16 @@ go install ./cmd/migrate
 
 3. **Validate Configuration**
    ```bash
-   ./ado-gh-wi-migrator validate
+   ./adowi2gh validate
    ```
 
 4. **Run Migration**
    ```bash
    # Dry run first
-   ./ado-gh-wi-migrator migrate --dry-run
+   ./adowi2gh migrate --dry-run
    
    # Actual migration
-   ./ado-gh-wi-migrator migrate
+   ./adowi2gh migrate
    ```
 
 ## Configuration
@@ -130,16 +130,16 @@ user_mapping:
 
 ```bash
 # Show help
-./ado-gh-wi-migrator --help
+./adowi2gh --help
 
 # Initialize configuration
-./ado-gh-wi-migrator config init
+./adowi2gh config init
 
 # Validate configuration and test connections
-./ado-gh-wi-migrator validate
+./adowi2gh validate
 
 # Run migration
-./ado-gh-wi-migrator migrate [flags]
+./adowi2gh migrate [flags]
 ```
 
 ### Migration Flags
@@ -157,19 +157,19 @@ user_mapping:
 
 ```bash
 # Dry run to preview changes
-./ado-gh-wi-migrator migrate --dry-run
+./adowi2gh migrate --dry-run
 
 # Migrate with custom batch size
-./ado-gh-wi-migrator migrate --batch-size 25
+./adowi2gh migrate --batch-size 25
 
 # Resume interrupted migration
-./ado-gh-wi-migrator migrate --resume
+./adowi2gh migrate --resume
 
 # Use custom config file
-./ado-gh-wi-migrator migrate --config /path/to/config.yaml
+./adowi2gh migrate --config /path/to/config.yaml
 
 # Verbose logging with custom report location
-./ado-gh-wi-migrator migrate --verbose --report ./reports/migration.json
+./adowi2gh migrate --verbose --report ./reports/migration.json
 ```
 
 ## Migration Process
@@ -226,14 +226,14 @@ Automatic checkpoint creation for resume capability:
 
 Enable verbose logging for detailed troubleshooting:
 ```bash
-./ado-gh-wi-migrator migrate --verbose
+./adowi2gh migrate --verbose
 ```
 
 ### Resume Failed Migrations
 
 If migration is interrupted:
 ```bash
-./ado-gh-wi-migrator migrate --resume
+./adowi2gh migrate --resume
 ```
 
 ## API Limits

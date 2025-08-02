@@ -9,13 +9,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"ado-gh-wi-migrator/ado"
-	"ado-gh-wi-migrator/config"
-	"ado-gh-wi-migrator/github"
-	"ado-gh-wi-migrator/models"
+	"adowi2gh/ado"
+	"adowi2gh/config"
+	"adowi2gh/github"
+	"adowi2gh/models"
 )
 
-// Engine manages the migration process
 type Engine struct {
 	adoClient    *ado.Client
 	githubClient *github.Client
@@ -26,7 +25,6 @@ type Engine struct {
 	checkpoint   *MigrationCheckpoint
 }
 
-// MigrationCheckpoint represents the current state of migration
 type MigrationCheckpoint struct {
 	LastProcessedID int                       `json:"last_processed_id"`
 	ProcessedItems  []int                     `json:"processed_items"`
@@ -36,7 +34,6 @@ type MigrationCheckpoint struct {
 	LastUpdate      time.Time                 `json:"last_update"`
 }
 
-// NewEngine creates a new migration engine
 func NewEngine(
 	adoClient *ado.Client,
 	githubClient *github.Client,
@@ -64,7 +61,6 @@ func NewEngine(
 	}
 }
 
-// Run executes the migration process
 func (e *Engine) Run(ctx context.Context) (*models.MigrationReport, error) {
 	e.logger.Info("Starting migration process...")
 	// Load checkpoint if resuming
@@ -74,12 +70,10 @@ func (e *Engine) Run(ctx context.Context) (*models.MigrationReport, error) {
 		}
 	}
 
-	// Test connections
 	if err := e.testConnections(ctx); err != nil {
 		return nil, fmt.Errorf("connection test failed: %w", err)
 	}
 
-	// Get work items from ADO
 	workItems, err := e.adoClient.GetWorkItems(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve work items: %w", err)
@@ -92,11 +86,9 @@ func (e *Engine) Run(ctx context.Context) (*models.MigrationReport, error) {
 		return e.performDryRun(ctx, workItems)
 	}
 
-	// Perform actual migration
 	return e.performMigration(ctx, workItems)
 }
 
-// testConnections verifies connectivity to both services
 func (e *Engine) testConnections(ctx context.Context) error {
 	e.logger.Info("Testing service connections...")
 
@@ -112,7 +104,6 @@ func (e *Engine) testConnections(ctx context.Context) error {
 	return nil
 }
 
-// performDryRun performs a dry run of the migration
 func (e *Engine) performDryRun(ctx context.Context, workItems []*models.WorkItem) (*models.MigrationReport, error) {
 	e.logger.Info("Performing dry run...")
 	for i, workItem := range workItems {
@@ -122,7 +113,6 @@ func (e *Engine) performDryRun(ctx context.Context, workItems []*models.WorkItem
 			"id", workItem.ID,
 			"title", workItem.GetTitle())
 
-		// Map work item to issue
 		issue, err := e.mapper.MapWorkItemToIssue(workItem)
 		if err != nil {
 			e.logger.Error("Failed to map work item", "id", workItem.ID, "error", err)
@@ -130,7 +120,6 @@ func (e *Engine) performDryRun(ctx context.Context, workItems []*models.WorkItem
 			continue
 		}
 
-		// Validate labels
 		if err := e.githubClient.ValidateLabels(ctx, issue.Labels); err != nil {
 			e.logger.Error("Label validation failed for work item", "id", workItem.ID, "error", err)
 			e.report.FailedCount++
@@ -154,11 +143,9 @@ func (e *Engine) performDryRun(ctx context.Context, workItems []*models.WorkItem
 	return e.report, nil
 }
 
-// performMigration performs the actual migration
 func (e *Engine) performMigration(ctx context.Context, workItems []*models.WorkItem) (*models.MigrationReport, error) {
 	e.logger.Info("Starting actual migration...")
 
-	// Process work items in batches
 	batchSize := e.config.BatchSize
 	if batchSize <= 0 {
 		batchSize = 10
@@ -199,7 +186,6 @@ func (e *Engine) performMigration(ctx context.Context, workItems []*models.WorkI
 	return e.report, nil
 }
 
-// processBatch processes a batch of work items
 func (e *Engine) processBatch(ctx context.Context, workItems []*models.WorkItem) error {
 	for _, workItem := range workItems {
 		if err := e.processWorkItem(ctx, workItem); err != nil {
@@ -210,7 +196,6 @@ func (e *Engine) processBatch(ctx context.Context, workItems []*models.WorkItem)
 	return nil
 }
 
-// processWorkItem processes a single work item
 func (e *Engine) processWorkItem(ctx context.Context, workItem *models.WorkItem) error { // Check if already processed (for resume functionality)
 	if e.isAlreadyProcessed(workItem.ID) {
 		e.logger.Debug("Work item already processed, skipping", "id", workItem.ID)
@@ -232,25 +217,21 @@ func (e *Engine) processWorkItem(ctx context.Context, workItem *models.WorkItem)
 		return nil
 	}
 
-	// Map work item to GitHub issue
 	issue, err := e.mapper.MapWorkItemToIssue(workItem)
 	if err != nil {
 		return fmt.Errorf("failed to map work item: %w", err)
 	}
 
-	// Create GitHub issue
 	createdIssue, err := e.githubClient.CreateIssue(ctx, issue)
 	if err != nil {
 		return fmt.Errorf("failed to create GitHub issue: %w", err)
 	}
-	// Process comments if enabled
 	if e.config.IncludeComments {
 		if err := e.processComments(ctx, workItem, createdIssue.Number); err != nil {
 			e.logger.Warn("Failed to migrate comments for work item", "id", workItem.ID, "error", err)
 		}
 	}
 
-	// Update issue state if needed
 	if issue.State == "closed" {
 		if err := e.githubClient.UpdateIssueState(ctx, createdIssue.Number, "closed"); err != nil {
 			e.logger.Warn("Failed to close issue", "issue", createdIssue.Number, "error", err)
@@ -264,9 +245,7 @@ func (e *Engine) processWorkItem(ctx context.Context, workItem *models.WorkItem)
 	return nil
 }
 
-// processComments migrates comments for a work item
 func (e *Engine) processComments(ctx context.Context, workItem *models.WorkItem, issueNumber int) error {
-	// Get comments from ADO
 	comments, err := e.adoClient.GetWorkItemComments(ctx, workItem.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get work item comments: %w", err)
@@ -278,7 +257,6 @@ func (e *Engine) processComments(ctx context.Context, workItem *models.WorkItem,
 
 	e.logger.Debug("Migrating comments for work item", "count", len(comments), "id", workItem.ID)
 
-	// Map and create GitHub comments
 	githubComments := e.mapper.MapComments(comments)
 	for _, comment := range githubComments {
 		if err := e.githubClient.CreateIssueComment(ctx, issueNumber, &comment); err != nil {
@@ -288,8 +266,6 @@ func (e *Engine) processComments(ctx context.Context, workItem *models.WorkItem,
 
 	return nil
 }
-
-// Helper methods for tracking progress
 
 func (e *Engine) isAlreadyProcessed(workItemID int) bool {
 	for _, id := range e.checkpoint.ProcessedItems {
@@ -326,8 +302,6 @@ func (e *Engine) recordMapping(workItemID, issueNumber int, status, errorMsg str
 	e.checkpoint.Mappings = append(e.checkpoint.Mappings, mapping)
 }
 
-// Checkpoint management
-
 func (e *Engine) saveCheckpoint() error {
 	checkpointPath := "./migration_checkpoint.json"
 
@@ -361,13 +335,11 @@ func (e *Engine) loadCheckpoint() error {
 	return nil
 }
 
-// SaveReport saves the migration report to a file
 func (e *Engine) SaveReport(filePath string) error {
 	if filePath == "" {
 		filePath = fmt.Sprintf("migration_report_%s.json", time.Now().Format("20060102_150405"))
 	}
 
-	// Ensure directory exists
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		return fmt.Errorf("failed to create report directory: %w", err)

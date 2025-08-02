@@ -15,7 +15,6 @@ type Config struct {
 	Migration   MigrationConfig   `mapstructure:"migration"`
 }
 
-// AzureDevOpsConfig contains Azure DevOps connection settings
 type AzureDevOpsConfig struct {
 	OrganizationURL     string        `mapstructure:"organization_url" yaml:"organization_url"`
 	PersonalAccessToken string        `mapstructure:"personal_access_token" yaml:"personal_access_token"`
@@ -23,7 +22,6 @@ type AzureDevOpsConfig struct {
 	Query               WorkItemQuery `mapstructure:"query"`
 }
 
-// GitHubConfig contains GitHub connection settings
 type GitHubConfig struct {
 	Token      string `mapstructure:"token"`
 	Owner      string `mapstructure:"owner"`
@@ -31,7 +29,6 @@ type GitHubConfig struct {
 	BaseURL    string `mapstructure:"base_url" yaml:"base_url"` // For GitHub Enterprise
 }
 
-// WorkItemQuery defines the query parameters for work items
 type WorkItemQuery struct {
 	WIQL          string   `mapstructure:"wiql"`
 	IDs           []int    `mapstructure:"ids"`
@@ -40,7 +37,6 @@ type WorkItemQuery struct {
 	AreaPaths     []string `mapstructure:"area_paths" yaml:"area_paths"`
 }
 
-// MigrationConfig contains migration-specific settings
 type MigrationConfig struct {
 	BatchSize            int               `mapstructure:"batch_size" yaml:"batch_size"`
 	FieldMapping         FieldMapping      `mapstructure:"field_mapping" yaml:"field_mapping"`
@@ -50,15 +46,16 @@ type MigrationConfig struct {
 	ResumeFromCheckpoint bool              `mapstructure:"resume_from_checkpoint" yaml:"resume_from_checkpoint"`
 }
 
-// FieldMapping defines how ADO fields map to GitHub fields
 type FieldMapping struct {
-	StateMapping    map[string]string   `mapstructure:"state_mapping" yaml:"state_mapping"`
-	LabelMapping    map[string][]string `mapstructure:"label_mapping" yaml:"label_mapping"`
-	TypeMapping     map[string][]string `mapstructure:"type_mapping" yaml:"type_mapping"`
-	PriorityMapping map[string][]string `mapstructure:"priority_mapping" yaml:"priority_mapping"`
+	StateMapping         map[string]string   `mapstructure:"state_mapping" yaml:"state_mapping"`
+	LabelMapping         map[string][]string `mapstructure:"label_mapping" yaml:"label_mapping"`
+	TypeMapping          map[string][]string `mapstructure:"type_mapping" yaml:"type_mapping"`
+	PriorityMapping      map[string][]string `mapstructure:"priority_mapping" yaml:"priority_mapping"`
+	TimeZone             string              `mapstructure:"time_zone" yaml:"time_zone"`
+	IncludeSeverityLabel bool                `mapstructure:"include_severity_label" yaml:"include_severity_label"`
+	IncludeAreaPathLabel bool                `mapstructure:"include_area_path_label" yaml:"include_area_path_label"`
 }
 
-// LoadConfig loads configuration from file and environment variables
 func LoadConfig(configPath string) (*Config, error) {
 	viper.SetConfigType("yaml")
 
@@ -72,10 +69,8 @@ func LoadConfig(configPath string) (*Config, error) {
 		viper.AddConfigPath("$HOME/.ado-gh-migrator")
 	}
 
-	// Set defaults
 	setDefaults()
 
-	// Read config file
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return nil, fmt.Errorf("error reading config file: %w", err)
@@ -87,7 +82,6 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("error unmarshaling config: %w", err)
 	}
 
-	// Validate configuration
 	if err := validateConfig(&config); err != nil {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
@@ -95,7 +89,6 @@ func LoadConfig(configPath string) (*Config, error) {
 	return &config, nil
 }
 
-// setDefaults sets default configuration values
 func setDefaults() {
 	viper.SetDefault("migration.batch_size", 50)
 	viper.SetDefault("migration.dry_run", false)
@@ -108,7 +101,6 @@ func setDefaults() {
 	viper.SetDefault("github.base_url", "https://api.github.com")
 }
 
-// validateConfig validates the loaded configuration
 func validateConfig(config *Config) error {
 	if config.AzureDevOps.OrganizationURL == "" {
 		return fmt.Errorf("azure_devops.organization_url is required")
@@ -141,7 +133,6 @@ func validateConfig(config *Config) error {
 	return nil
 }
 
-// SaveConfig saves the current configuration to a file
 func SaveConfig(config *Config, configPath string) error {
 	viper.Set("azure_devops", config.AzureDevOps)
 	viper.Set("github", config.GitHub)

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config represents the application configuration
 type Config struct {
 	AzureDevOps AzureDevOpsConfig `mapstructure:"azure_devops"`
 	GitHub      GitHubConfig      `mapstructure:"github"`

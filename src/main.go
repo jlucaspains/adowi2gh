@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"ado-gh-wi-migrator/ado"
-	"ado-gh-wi-migrator/config"
-	"ado-gh-wi-migrator/github"
-	"ado-gh-wi-migrator/migration"
-	"ado-gh-wi-migrator/models"
+	"adowi2gh/ado"
+	"adowi2gh/config"
+	"adowi2gh/github"
+	"adowi2gh/migration"
+	"adowi2gh/models"
 )
 
 var (
@@ -40,7 +40,7 @@ func main() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "ado-gh-wi-migrator",
+	Use:   "adowi2gh",
 	Short: "Migrate work items from Azure DevOps to GitHub issues",
 	Long: `A command-line tool to migrate work items from Azure DevOps to GitHub issues.
 	
@@ -90,7 +90,7 @@ var versionCmd = &cobra.Command{
 	Short: "Show version information",
 	Long:  "Display the version, commit, and build time of the application.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("ado-gh-wi-migrator version %s\n", Version)
+		fmt.Printf("adowi2gh version %s\n", Version)
 		fmt.Printf("Commit: %s\n", Commit)
 		fmt.Printf("Built: %s\n", BuildTime)
 	},
@@ -305,6 +305,9 @@ func createDefaultConfig() *config.Config {
 					"3": {"priority:medium"},
 					"4": {"priority:low"},
 				},
+				IncludeSeverityLabel: true,
+				IncludeAreaPathLabel: true,
+				TimeZone:             "UTC",
 			},
 			UserMapping:          map[string]string{},
 			DryRun:               false,

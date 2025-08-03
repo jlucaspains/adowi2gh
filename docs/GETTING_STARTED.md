@@ -1,4 +1,4 @@
-# Getting Started with ado-gh-wi-migrator
+# Getting Started with adowi2gh
 
 This guide will help you set up and run your first migration from Azure DevOps to GitHub.
 
@@ -23,8 +23,8 @@ This guide will help you set up and run your first migration from Azure DevOps t
 ### Option A: Build from Source
 ```bash
 git clone <repository-url>
-cd ado-gh-wi-migrator
-go build -o build/ado-gh-wi-migrator.exe ./cmd/migrate
+cd adowi2gh
+go build -o build/adowi2gh.exe ./cmd/migrate
 ```
 
 ### Option B: Use PowerShell Script
@@ -41,7 +41,7 @@ make build
 
 Initialize a new configuration file:
 ```bash
-.\build\ado-gh-wi-migrator.exe config init
+.\build\adowi2gh.exe config init
 ```
 
 This creates `configs/config.yaml` with default settings.
@@ -156,7 +156,7 @@ user_mapping:
 
 Test your configuration and connections:
 ```bash
-.\build\ado-gh-wi-migrator.exe validate
+.\build\adowi2gh.exe validate
 ```
 
 This will verify:
@@ -169,7 +169,7 @@ This will verify:
 
 Preview the migration without making changes:
 ```bash
-.\build\ado-gh-wi-migrator.exe migrate --dry-run --verbose
+.\build\adowi2gh.exe migrate --dry-run --verbose
 ```
 
 This shows you:
@@ -181,7 +181,7 @@ This shows you:
 
 If the dry run looks good, run the actual migration:
 ```bash
-.\build\ado-gh-wi-migrator.exe migrate --verbose
+.\build\adowi2gh.exe migrate --verbose
 ```
 
 ## Step 11: Review Results

@@ -13,6 +13,11 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 - **Resume Capability**: Resume interrupted migrations from checkpoints
 - **Dry Run Mode**: Preview migrations without making changes
 - **Comprehensive Reporting**: Detailed migration reports with success/failure tracking
+- **HTML to Markdown Conversion**: Automatically converts HTML content to Markdown format
+
+## Limitations
+
+- **Images and Attachments**: Work item attachments and embedded images are not currently supported and will not be migrated
 
 ## Prerequisites
 
@@ -27,21 +32,22 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 
 ```bash
 git clone <repository-url>
-cd ado-gh-wi-migrator
-go build -o ado-gh-wi-migrator ./cmd/migrate
+cd ado-gh-wi-migrator/src
+go build -o ../adowi2gh.exe .
 ```
 
 ### Using Go Install
 
 ```bash
-go install ./cmd/migrate
+cd src
+go install .
 ```
 
 ## Quick Start
 
 1. **Initialize Configuration**
    ```bash
-   ./ado-gh-wi-migrator config init
+   ./adowi2gh config init
    ```
 
 2. **Edit Configuration**
@@ -51,25 +57,40 @@ go install ./cmd/migrate
      organization_url: "https://dev.azure.com/your-organization"
      personal_access_token: "your-ado-pat"
      project: "your-project"
+     query:
+       # Option 1: Use specific work item types and states
+       work_item_types:
+         - "Bug"
+         - "User Story"
+         - "Task"
+       states:
+         - "New"
+         - "Active"
+         - "Done"
+       # Option 2: Use custom WIQL query
+       # wiql: "SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'Bug'"
+       # Option 3: Use specific work item IDs
+       # ids: [1234, 1235, 1236]
    
    github:
      token: "your-github-token"
      owner: "your-username"
      repository: "your-repo"
+     base_url: "https://api.github.com"  # For GitHub Enterprise, use your instance URL
    ```
 
 3. **Validate Configuration**
    ```bash
-   ./ado-gh-wi-migrator validate
+   ./adowi2gh validate
    ```
 
 4. **Run Migration**
    ```bash
    # Dry run first
-   ./ado-gh-wi-migrator migrate --dry-run
+   ./adowi2gh migrate --dry-run
    
    # Actual migration
-   ./ado-gh-wi-migrator migrate
+   ./adowi2gh migrate
    ```
 
 ## Configuration
@@ -81,10 +102,10 @@ go install ./cmd/migrate
    - Create new token with "Work Items (read)" scope
    - Copy the token for configuration
 
-2. Configure work item query:
-   - Use WIQL for complex queries
-   - Or specify work item types, states, and area paths
-   - Or provide specific work item IDs
+2. Configure work item query (choose one method):
+   - **WIQL Query**: Use custom Work Item Query Language
+   - **Filter by Types and States**: Specify work item types, states, and area paths
+   - **Specific IDs**: Provide a list of specific work item IDs to migrate
 
 ### GitHub Setup
 
@@ -103,15 +124,36 @@ Configure how ADO fields map to GitHub:
 field_mapping:
   state_mapping:
     "New": "open"
+    "Active": "open"
     "Done": "closed"
   
   type_mapping:
     "Bug": ["bug"]
     "User Story": ["enhancement"]
+    "Task": ["task"]
   
   priority_mapping:
     "1": ["priority:critical"]
     "2": ["priority:high"]
+    "3": ["priority:medium"]
+    "4": ["priority:low"]
+  
+  # Include additional labels based on work item properties
+  include_severity_label: true      # Adds severity:high, severity:critical, etc.
+  include_area_path_label: true     # Adds area:frontend, area:backend, etc.
+  time_zone: "America/New_York"     # Timezone for comment timestamps
+```
+
+### Migration Settings
+
+Configure migration behavior:
+
+```yaml
+migration:
+  batch_size: 50                    # Number of items to process per batch
+  dry_run: false                    # Set to true for preview mode
+  include_comments: true            # Migrate work item comments
+  resume_from_checkpoint: false     # Resume from previous run
 ```
 
 ### User Mapping
@@ -130,16 +172,19 @@ user_mapping:
 
 ```bash
 # Show help
-./ado-gh-wi-migrator --help
+./adowi2gh --help
+
+# Show version information
+./adowi2gh version
 
 # Initialize configuration
-./ado-gh-wi-migrator config init
+./adowi2gh config init
 
 # Validate configuration and test connections
-./ado-gh-wi-migrator validate
+./adowi2gh validate
 
 # Run migration
-./ado-gh-wi-migrator migrate [flags]
+./adowi2gh migrate [flags]
 ```
 
 ### Migration Flags
@@ -147,7 +192,7 @@ user_mapping:
 ```bash
 --dry-run          # Preview migration without making changes
 --resume           # Resume from last checkpoint
---batch-size N     # Override batch size from config
+--batch-size N     # Override batch size from config (default: 50)
 --report FILE      # Specify output file for migration report
 --config FILE      # Use specific configuration file
 --verbose          # Enable verbose logging
@@ -157,50 +202,57 @@ user_mapping:
 
 ```bash
 # Dry run to preview changes
-./ado-gh-wi-migrator migrate --dry-run
+./adowi2gh migrate --dry-run
 
 # Migrate with custom batch size
-./ado-gh-wi-migrator migrate --batch-size 25
+./adowi2gh migrate --batch-size 25
 
 # Resume interrupted migration
-./ado-gh-wi-migrator migrate --resume
+./adowi2gh migrate --resume
 
 # Use custom config file
-./ado-gh-wi-migrator migrate --config /path/to/config.yaml
+./adowi2gh migrate --config ./custom-config.yaml
 
 # Verbose logging with custom report location
-./ado-gh-wi-migrator migrate --verbose --report ./reports/migration.json
+./adowi2gh migrate --verbose --report ./reports/custom-migration.json
+
+# Validate configuration with verbose output
+./adowi2gh validate --verbose
 ```
 
 ## Migration Process
 
-1. **Connection Testing**: Validates connectivity to both services
-2. **Work Item Retrieval**: Queries ADO based on configuration
-3. **Field Mapping**: Converts ADO fields to GitHub format
-4. **Issue Creation**: Creates GitHub issues with mapped data
-5. **Comment Migration**: Migrates comments if enabled
-6. **State Management**: Sets appropriate issue states
-7. **Reporting**: Generates detailed migration report
+1. **Connection Testing**: Validates connectivity to both Azure DevOps and GitHub
+2. **Work Item Retrieval**: Queries ADO based on your configured query (WIQL, work item types, or specific IDs)
+3. **Field Mapping**: Converts ADO fields to GitHub format with HTML-to-Markdown conversion
+4. **Duplicate Detection**: Checks for existing GitHub issues to avoid duplicates
+5. **Issue Creation**: Creates GitHub issues with mapped data and labels
+6. **Comment Migration**: Migrates comments with original author attribution (if enabled)
+7. **State Management**: Sets appropriate issue states (open/closed)
+8. **Checkpoint Saving**: Creates resume points for large migrations
+9. **Reporting**: Generates detailed migration report with mappings and errors
 
 ## Output
 
 ### Console Output
-Real-time progress with color-coded status messages:
-- ✓ Success indicators
-- ⚠ Warnings for non-critical issues  
-- ✗ Error indicators for failures
+Real-time progress with structured logging:
+- Informational messages about migration progress
+- Work item processing status with IDs and titles
+- Connection testing results
+- Batch processing information
 
 ### Migration Report
-JSON report with detailed information:
-- Total items processed
-- Success/failure counts
-- Individual item mappings
-- Error details
-- Processing duration
+JSON report saved to `reports/` directory with detailed information:
+- Total items processed and timing information
+- Success/failure/skipped counts
+- Individual item mappings (ADO Work Item ID → GitHub Issue Number)
+- Error details with specific failure reasons
+- Migration metadata and configuration used
 
 ### Checkpoint Files
 Automatic checkpoint creation for resume capability:
-- `migration_checkpoint.json`: Current progress state
+- `migration_checkpoint.json`: Current progress state with processed items
+- Resume functionality to continue from interruptions
 - Can resume from interruptions or failures
 
 ## Troubleshooting
@@ -212,48 +264,71 @@ Automatic checkpoint creation for resume capability:
    - Check token expiration dates
    - Ensure organization/repository access
 
+2. **Configuration Issues**
+   - Verify YAML syntax in config file
+   - Check required fields are populated
+   - Ensure file paths and URLs are correct
+
 3. **Field Mapping Errors**
    - Validate field mapping configuration
    - Check for invalid GitHub label names
    - Verify user mapping accuracy
+   - Review HTML content conversion issues
 
 4. **Network Issues**
    - Check connectivity to both services
    - Verify proxy/firewall settings
    - Use appropriate base URLs for enterprise instances
 
+5. **Work Item Query Issues**
+   - Validate WIQL syntax if using custom queries
+   - Check work item type names and project access
+   - Verify area path and iteration path permissions
+
+6. **Duplicate Issues**
+   - Tool automatically detects existing issues by work item ID
+   - Check if issues already exist before re-running migration
+   - Use `--resume` flag to continue from checkpoint
+
 ### Debug Mode
 
 Enable verbose logging for detailed troubleshooting:
 ```bash
-./ado-gh-wi-migrator migrate --verbose
+./adowi2gh migrate --verbose
 ```
 
 ### Resume Failed Migrations
 
 If migration is interrupted:
 ```bash
-./ado-gh-wi-migrator migrate --resume
+./adowi2gh migrate --resume
 ```
 
-## API Limits
+## API Limits and Performance
 
 ### Azure DevOps
 - Rate limits vary by organization
-- Batch size recommended: 50-100 items
+- Batch size recommended: 25-50 items
+- Default batch size: 50 items
 - Monitor usage in Azure DevOps admin panel
 
 ### GitHub
 - 5,000 requests per hour for authenticated requests
 - Secondary rate limits apply for issue creation
+- Built-in rate limiting with 2-second delays between batches
+
+## Known Limitations
+
+- **Attachments and Images**: Work item attachments and embedded images are not migrated
+- **Work Item Links**: Relations between work items are not currently migrated
+- **Rich Formatting**: Some complex HTML formatting may not convert perfectly to Markdown
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+2. Make your changes
+3. Add tests for new functionality
+4. Submit a pull request
 
 ## License
 

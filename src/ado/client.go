@@ -8,11 +8,10 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 
-	"ado-gh-wi-migrator/config"
-	"ado-gh-wi-migrator/models"
+	"adowi2gh/config"
+	"adowi2gh/models"
 )
 
-// Client represents an Azure DevOps client
 type Client struct {
 	connection *azuredevops.Connection
 	witClient  workitemtracking.Client
@@ -20,7 +19,6 @@ type Client struct {
 	logger     *slog.Logger
 }
 
-// NewClient creates a new Azure DevOps client
 func NewClient(cfg *config.AzureDevOpsConfig, logger *slog.Logger) (*Client, error) {
 	if cfg.OrganizationURL == "" {
 		return nil, fmt.Errorf("organization URL is required")
@@ -47,7 +45,6 @@ func NewClient(cfg *config.AzureDevOpsConfig, logger *slog.Logger) (*Client, err
 	}, nil
 }
 
-// TestConnection tests the connection to Azure DevOps
 func (c *Client) TestConnection(ctx context.Context) error {
 	c.logger.Info("Testing Azure DevOps connection...")
 
@@ -70,7 +67,6 @@ func (c *Client) TestConnection(ctx context.Context) error {
 	return nil
 }
 
-// GetWorkItems retrieves work items based on the query configuration
 func (c *Client) GetWorkItems(ctx context.Context) ([]*models.WorkItem, error) {
 	c.logger.Info("Retrieving work items from Azure DevOps...")
 
@@ -106,7 +102,6 @@ func (c *Client) GetWorkItems(ctx context.Context) ([]*models.WorkItem, error) {
 	return c.getWorkItemDetails(ctx, workItemIds)
 }
 
-// executeWIQL executes a WIQL query and returns work item IDs
 func (c *Client) executeWIQL(ctx context.Context, wiql string) ([]int, error) {
 	queryArgs := workitemtracking.QueryByWiqlArgs{
 		Project: &c.config.Project,
@@ -132,7 +127,6 @@ func (c *Client) executeWIQL(ctx context.Context, wiql string) ([]int, error) {
 	return workItemIds, nil
 }
 
-// buildDefaultQuery builds a default WIQL query based on configuration filters
 func (c *Client) buildDefaultQuery() string {
 	query := fmt.Sprintf("SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '%s'", c.config.Project)
 
@@ -172,7 +166,6 @@ func (c *Client) buildDefaultQuery() string {
 	return query
 }
 
-// getWorkItemDetails retrieves detailed information for work items
 func (c *Client) getWorkItemDetails(ctx context.Context, workItemIds []int) ([]*models.WorkItem, error) {
 	var workItems []*models.WorkItem
 
@@ -198,7 +191,6 @@ func (c *Client) getWorkItemDetails(ctx context.Context, workItemIds []int) ([]*
 	return workItems, nil
 }
 
-// getWorkItemBatch retrieves a batch of work items
 func (c *Client) getWorkItemBatch(ctx context.Context, ids []int) ([]*models.WorkItem, error) {
 	expand := workitemtracking.WorkItemExpandValues.All
 
@@ -224,7 +216,6 @@ func (c *Client) getWorkItemBatch(ctx context.Context, ids []int) ([]*models.Wor
 	return workItems, nil
 }
 
-// convertToWorkItem converts ADO work item to our internal model
 func (c *Client) convertToWorkItem(adoWorkItem workitemtracking.WorkItem) *models.WorkItem {
 	workItem := &models.WorkItem{
 		Fields:      make(map[string]interface{}),
@@ -245,14 +236,12 @@ func (c *Client) convertToWorkItem(adoWorkItem workitemtracking.WorkItem) *model
 		workItem.Rev = *adoWorkItem.Rev
 	}
 
-	// Copy fields
 	if adoWorkItem.Fields != nil {
 		for key, value := range *adoWorkItem.Fields {
 			workItem.Fields[key] = value
 		}
 	}
 
-	// Convert relations
 	if adoWorkItem.Relations != nil {
 		for _, relation := range *adoWorkItem.Relations {
 			workItem.Relations = append(workItem.Relations, models.WorkItemRelation{
@@ -265,7 +254,6 @@ func (c *Client) convertToWorkItem(adoWorkItem workitemtracking.WorkItem) *model
 	return workItem
 }
 
-// GetWorkItemComments retrieves comments for a work item
 func (c *Client) GetWorkItemComments(ctx context.Context, workItemID int) ([]models.WorkItemComment, error) {
 	getCommentsArgs := workitemtracking.GetCommentsArgs{
 		Project:    &c.config.Project,
@@ -294,7 +282,6 @@ func (c *Client) GetWorkItemComments(ctx context.Context, workItemID int) ([]mod
 	return comments, nil
 }
 
-// Helper functions
 func getStringPtr(ptr *string) string {
 	if ptr != nil {
 		return *ptr

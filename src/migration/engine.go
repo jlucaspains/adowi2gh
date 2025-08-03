@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"adowi2gh/ado"
-	"adowi2gh/config"
-	"adowi2gh/github"
-	"adowi2gh/models"
+	"github.com/jlucaspains/adowi2gh/ado"
+	"github.com/jlucaspains/adowi2gh/config"
+	"github.com/jlucaspains/adowi2gh/github"
+	"github.com/jlucaspains/adowi2gh/models"
 )
 
 type Engine struct {

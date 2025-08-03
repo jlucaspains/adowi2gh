@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"adowi2gh/config"
-	"adowi2gh/models"
+	"github.com/jlucaspains/adowi2gh/config"
+	"github.com/jlucaspains/adowi2gh/models"
 
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 )

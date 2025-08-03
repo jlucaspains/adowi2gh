@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"adowi2gh/config"
-	"adowi2gh/models"
+	"github.com/jlucaspains/adowi2gh/config"
+	"github.com/jlucaspains/adowi2gh/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

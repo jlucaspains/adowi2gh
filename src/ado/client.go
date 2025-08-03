@@ -8,8 +8,8 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 
-	"adowi2gh/config"
-	"adowi2gh/models"
+	"github.com/jlucaspains/adowi2gh/config"
+	"github.com/jlucaspains/adowi2gh/models"
 )
 
 type Client struct {

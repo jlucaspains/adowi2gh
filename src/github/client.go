@@ -9,8 +9,8 @@ import (
 	"github.com/google/go-github/v74/github"
 	"golang.org/x/oauth2"
 
-	"adowi2gh/config"
-	"adowi2gh/models"
+	"github.com/jlucaspains/adowi2gh/config"
+	"github.com/jlucaspains/adowi2gh/models"
 )
 
 type Client struct {

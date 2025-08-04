@@ -37,15 +37,12 @@ jobs:
 
       - name: Pull dependencies
         run: go mod download
-        working-directory: ./src
       
       - name: Test
-        run: go build .
-        working-directory: ./src
+        run: go build ./cmd
       
       - name: Test
         run: go test -coverprofile=coverage.txt ./...
-        working-directory: ./src
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

@@ -84,7 +84,7 @@ var validateCmd = &cobra.Command{
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
-	Long:  "Display the version, commit, and build time of the application.",
+	Long:  "Display the version of the application.",
 	Run: func(cmd *cobra.Command, args []string) {
 		info, ok := debug.ReadBuildInfo()
 		if !ok || info == nil {

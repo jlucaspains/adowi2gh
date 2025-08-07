@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -18,11 +19,6 @@ import (
 )
 
 var (
-	// Version information - set by build flags
-	Version   = "dev"
-	Commit    = "unknown"
-	BuildTime = "unknown"
-
 	// CLI flags
 	configFile string
 	dryRun     bool
@@ -90,9 +86,8 @@ var versionCmd = &cobra.Command{
 	Short: "Show version information",
 	Long:  "Display the version, commit, and build time of the application.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("adowi2gh version %s\n", Version)
-		fmt.Printf("Commit: %s\n", Commit)
-		fmt.Printf("Built: %s\n", BuildTime)
+		info, _ := debug.ReadBuildInfo()
+		fmt.Printf("adowi2gh version %s\n", info.Main.Version)
 	},
 }
 

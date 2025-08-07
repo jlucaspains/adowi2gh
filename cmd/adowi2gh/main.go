@@ -86,7 +86,11 @@ var versionCmd = &cobra.Command{
 	Short: "Show version information",
 	Long:  "Display the version, commit, and build time of the application.",
 	Run: func(cmd *cobra.Command, args []string) {
-		info, _ := debug.ReadBuildInfo()
+		info, ok := debug.ReadBuildInfo()
+		if !ok || info == nil {
+			fmt.Println("adowi2gh version unknown (build info not available)")
+			return
+		}
 		fmt.Printf("adowi2gh version %s\n", info.Main.Version)
 	},
 }

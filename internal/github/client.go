@@ -71,11 +71,15 @@ func (c *Client) TestConnection(ctx context.Context) error {
 func (c *Client) CreateIssue(ctx context.Context, issue *models.GitHubIssue) (*models.GitHubIssue, error) {
 	c.logger.Debug("Creating GitHub issue", "issue", issue.Title)
 
+	labels := issue.Labels
+	if labels == nil {
+		labels = []string{}
+	}
 	// Convert our model to GitHub API model
 	githubIssue := &github.IssueRequest{
 		Title:     &issue.Title,
 		Body:      &issue.Body,
-		Labels:    &issue.Labels,
+		Labels:    &labels,
 		Assignees: &issue.Assignees,
 	}
 
@@ -170,7 +174,7 @@ func (c *Client) CreateLabel(ctx context.Context, name, color, description strin
 
 func (c *Client) SearchIssues(ctx context.Context, workItemID int) ([]*github.Issue, error) {
 	// Search for issues that contain the work item ID in the body
-	query := fmt.Sprintf("repo:%s/%s \"#%d\" in:body", c.config.Owner, c.config.Repository, workItemID)
+	query := fmt.Sprintf("repo:%s/%s \"#%d\" in:body is:issue", c.config.Owner, c.config.Repository, workItemID)
 
 	searchResult, _, err := c.client.Search.Issues(ctx, query, nil)
 	if err != nil {

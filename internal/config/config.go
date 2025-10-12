@@ -2,102 +2,92 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/viper"
+	"go.yaml.in/yaml/v4"
 )
 
 type Config struct {
-	AzureDevOps AzureDevOpsConfig `mapstructure:"azure_devops"`
-	GitHub      GitHubConfig      `mapstructure:"github"`
-	Migration   MigrationConfig   `mapstructure:"migration"`
+	AzureDevOps AzureDevOpsConfig `yaml:"azure_devops"`
+	GitHub      GitHubConfig      `yaml:"github"`
+	Migration   MigrationConfig   `yaml:"migration"`
 }
 
 type AzureDevOpsConfig struct {
-	OrganizationURL     string        `mapstructure:"organization_url" yaml:"organization_url"`
-	PersonalAccessToken string        `mapstructure:"personal_access_token" yaml:"personal_access_token"`
-	Project             string        `mapstructure:"project"`
-	Query               WorkItemQuery `mapstructure:"query"`
+	OrganizationURL     string        `yaml:"organization_url"`
+	PersonalAccessToken string        `yaml:"personal_access_token"`
+	Project             string        `yaml:"project"`
+	Query               WorkItemQuery `yaml:"query"`
 }
 
 type GitHubConfig struct {
-	Token      string `mapstructure:"token"`
-	Owner      string `mapstructure:"owner"`
-	Repository string `mapstructure:"repository"`
-	BaseURL    string `mapstructure:"base_url" yaml:"base_url"` // For GitHub Enterprise
+	Token      string `yaml:"token"`
+	Owner      string `yaml:"owner"`
+	Repository string `yaml:"repository"`
+	BaseURL    string `yaml:"base_url"` // For GitHub Enterprise
 }
 
 type WorkItemQuery struct {
-	WIQL          string   `mapstructure:"wiql"`
-	IDs           []int    `mapstructure:"ids"`
-	WorkItemTypes []string `mapstructure:"work_item_types" yaml:"work_item_types"`
-	States        []string `mapstructure:"states"`
-	AreaPaths     []string `mapstructure:"area_paths" yaml:"area_paths"`
+	WIQL          string   `yaml:"wiql"`
+	IDs           []int    `yaml:"ids"`
+	WorkItemTypes []string `yaml:"work_item_types"`
+	States        []string `yaml:"states"`
+	AreaPaths     []string `yaml:"area_paths"`
 }
 
 type MigrationConfig struct {
-	BatchSize            int               `mapstructure:"batch_size" yaml:"batch_size"`
-	FieldMapping         FieldMapping      `mapstructure:"field_mapping" yaml:"field_mapping"`
-	UserMapping          map[string]string `mapstructure:"user_mapping" yaml:"user_mapping"`
-	DryRun               bool              `mapstructure:"dry_run" yaml:"dry_run"`
-	IncludeComments      bool              `mapstructure:"include_comments" yaml:"include_comments"`
-	ResumeFromCheckpoint bool              `mapstructure:"resume_from_checkpoint" yaml:"resume_from_checkpoint"`
+	BatchSize            int               `yaml:"batch_size"`
+	FieldMapping         FieldMapping      `yaml:"field_mapping"`
+	UserMapping          map[string]string `yaml:"user_mapping"`
+	DryRun               bool              `yaml:"dry_run"`
+	IncludeComments      bool              `yaml:"include_comments"`
+	ResumeFromCheckpoint bool              `yaml:"resume_from_checkpoint"`
 }
 
 type FieldMapping struct {
-	StateMapping         map[string]string   `mapstructure:"state_mapping" yaml:"state_mapping"`
-	LabelMapping         map[string][]string `mapstructure:"label_mapping" yaml:"label_mapping"`
-	TypeMapping          map[string][]string `mapstructure:"type_mapping" yaml:"type_mapping"`
-	PriorityMapping      map[string][]string `mapstructure:"priority_mapping" yaml:"priority_mapping"`
-	TimeZone             string              `mapstructure:"time_zone" yaml:"time_zone"`
-	IncludeSeverityLabel bool                `mapstructure:"include_severity_label" yaml:"include_severity_label"`
-	IncludeAreaPathLabel bool                `mapstructure:"include_area_path_label" yaml:"include_area_path_label"`
+	StateMapping         map[string]string   `yaml:"state_mapping"`
+	LabelMapping         map[string][]string `yaml:"label_mapping"`
+	TypeMapping          map[string][]string `yaml:"type_mapping"`
+	PriorityMapping      map[string][]string `yaml:"priority_mapping"`
+	TimeZone             string              `yaml:"time_zone"`
+	IncludeSeverityLabel bool                `yaml:"include_severity_label"`
+	IncludeAreaPathLabel bool                `yaml:"include_area_path_label"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
-	viper.SetConfigType("yaml")
-
-	if configPath != "" {
-		viper.SetConfigFile(configPath)
-	} else {
-		// Set default config file locations
-		viper.SetConfigName("config")
-		viper.AddConfigPath(".")
-		viper.AddConfigPath("./configs")
-		viper.AddConfigPath("$HOME/.ado-gh-migrator")
+	if configPath == "" {
+		configPath = "./configs/config.yaml"
 	}
 
-	setDefaults()
+	slog.Info("Loading configuration", "file", configPath)
 
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("error reading config file: %w", err)
-		}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
+	config := &Config{}
+	setDefaults(config)
+
+	if err := yaml.Unmarshal(data, config); err != nil {
 		return nil, fmt.Errorf("error unmarshaling config: %w", err)
 	}
 
-	if err := validateConfig(&config); err != nil {
+	if err := validateConfig(config); err != nil {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
 
-	return &config, nil
+	return config, nil
 }
 
-func setDefaults() {
-	viper.SetDefault("migration.batch_size", 50)
-	viper.SetDefault("migration.dry_run", false)
-	viper.SetDefault("migration.include_comments", true)
-	viper.SetDefault("migration.include_attachments", false)
-	viper.SetDefault("migration.create_milestones", true)
-	viper.SetDefault("migration.resume_from_checkpoint", false)
-	viper.SetDefault("logging.level", "info")
-	viper.SetDefault("logging.format", "text")
-	viper.SetDefault("github.base_url", "https://api.github.com")
+func setDefaults(config *Config) {
+	config.Migration.BatchSize = 50
+	config.Migration.DryRun = false
+	config.Migration.IncludeComments = true
+	config.Migration.ResumeFromCheckpoint = false
+	config.GitHub.BaseURL = "https://api.github.com"
 }
 
 func validateConfig(config *Config) error {
@@ -133,10 +123,6 @@ func validateConfig(config *Config) error {
 }
 
 func SaveConfig(config *Config, configPath string) error {
-	viper.Set("azure_devops", config.AzureDevOps)
-	viper.Set("github", config.GitHub)
-	viper.Set("migration", config.Migration)
-
 	if configPath == "" {
 		configPath = "./configs/config.yaml"
 	}
@@ -147,5 +133,10 @@ func SaveConfig(config *Config, configPath string) error {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
-	return viper.WriteConfigAs(configPath)
+	data, err := yaml.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("error marshaling config: %w", err)
+	}
+
+	return os.WriteFile(configPath, data, 0644)
 }

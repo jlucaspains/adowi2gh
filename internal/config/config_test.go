@@ -5,15 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLoadConfig(t *testing.T) {
-	// Reset viper before each test
-	viper.Reset()
-
 	t.Run("load valid config file", func(t *testing.T) {
 		// Create temporary config file
 		tempDir := t.TempDir()
@@ -265,7 +261,6 @@ func TestSaveConfig(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Load and verify saved config
-		viper.Reset()
 		loadedConfig, err := LoadConfig(configFile)
 		require.NoError(t, err)
 
@@ -305,16 +300,12 @@ func TestSaveConfig(t *testing.T) {
 }
 
 func TestSetDefaults(t *testing.T) {
-	viper.Reset()
-	setDefaults()
+	config := &Config{}
+	setDefaults(config)
 
-	assert.Equal(t, 50, viper.GetInt("migration.batch_size"))
-	assert.False(t, viper.GetBool("migration.dry_run"))
-	assert.True(t, viper.GetBool("migration.include_comments"))
-	assert.False(t, viper.GetBool("migration.include_attachments"))
-	assert.True(t, viper.GetBool("migration.create_milestones"))
-	assert.False(t, viper.GetBool("migration.resume_from_checkpoint"))
-	assert.Equal(t, "info", viper.GetString("logging.level"))
-	assert.Equal(t, "text", viper.GetString("logging.format"))
-	assert.Equal(t, "https://api.github.com", viper.GetString("github.base_url"))
+	assert.Equal(t, 50, config.Migration.BatchSize)
+	assert.False(t, config.Migration.DryRun)
+	assert.True(t, config.Migration.IncludeComments)
+	assert.False(t, config.Migration.ResumeFromCheckpoint)
+	assert.Equal(t, "https://api.github.com", config.GitHub.BaseURL)
 }

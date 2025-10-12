@@ -3,7 +3,7 @@ module github.com/jlucaspains/adowi2gh
 go 1.24.1
 
 require (
-	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
+	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/google/go-github/v74 v74.0.0
 	github.com/microsoft/azure-devops-go-api/azuredevops/v7 v7.1.0
 	github.com/spf13/cobra v1.10.1
@@ -29,8 +29,8 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

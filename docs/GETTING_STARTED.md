@@ -15,7 +15,7 @@ This guide will help you set up and run your first migration from Azure DevOps t
    - Target repository created and accessible
 
 3. **Go Environment**
-   - Go 1.19 or later installed
+   - Go 1.24.1 or later installed
    - Basic knowledge of command line
 
 ## Step 1: Installation
@@ -29,7 +29,7 @@ go install github.com/jlucaspains/adowi2gh/cmd/adowi2gh@latest
 ```bash
 git clone <repository-url>
 cd adowi2gh
-go build -o build/adowi2gh ./cmd/migrate
+go build -o build/adowi2gh ./cmd/adowi2gh
 cd ./build
 ```
 
@@ -208,11 +208,10 @@ github:
   base_url: "https://github.company.com/api/v3"
 ```
 
-### Include Comments and Attachments
+### Include Comments
 ```yaml
 migration:
   include_comments: true
-  include_attachments: true
 ```
 
 ### Custom Batch Size

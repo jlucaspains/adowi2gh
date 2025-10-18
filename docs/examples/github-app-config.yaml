@@ -16,16 +16,16 @@ azure_devops:
       - "Done"
 
 github:
-  token: "your-github-token"
-  owner: "your-github-username"
+  app_certificate_path: "./configs/adowi2gh.2025-10-13.private-key.pem"
+  app_id: 123456
+  installation_id: 987654
+  owner: "your-github-organization"
   repository: "your-repository"
-  base_url: "https://api.github.com"
 
 migration:
   batch_size: 25
   dry_run: false
   include_comments: true
-  include_attachments: false
   
   field_mapping:
     state_mapping:

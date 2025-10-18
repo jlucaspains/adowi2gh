@@ -15,13 +15,9 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 - **Comprehensive Reporting**: Detailed migration reports with success/failure tracking
 - **HTML to Markdown Conversion**: Automatically converts HTML content to Markdown format
 
-## Limitations
-
-- **Images and Attachments**: Work item attachments and embedded images are not currently supported and will not be migrated
-
 ## Prerequisites
 
-- Go 1.19 or later
+- Go 1.24.1 or later
 - Azure DevOps Personal Access Token with Work Items (read) permission
 - GitHub Personal Access Token or GitHub App with repository permissions
 - Access to both Azure DevOps organization and target GitHub repository
@@ -30,6 +26,51 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 See the [Getting Started Guide](docs/GETTING_STARTED.md) for detailed setup instructions.
 
 ## Configuration
+
+### Authentication
+
+The tool supports two authentication methods for GitHub:
+
+#### Personal Access Token (PAT)
+```yaml
+github:
+  token: "your-github-token"
+  owner: "your-github-username"
+  repository: "your-repository"
+  base_url: "https://api.github.com"  # For GitHub Enterprise, use your instance URL
+```
+
+#### GitHub App (Recommended for organizations)
+```yaml
+github:
+  app_certificate_path: "./configs/github-app-private-key.pem"
+  app_id: 123456
+  installation_id: 987654
+  owner: "your-github-username"
+  repository: "your-repository"
+  base_url: "https://api.github.com"  # For GitHub Enterprise, use your instance URL
+```
+
+### Azure DevOps Configuration
+```yaml
+azure_devops:
+  organization_url: "https://dev.azure.com/your-organization"
+  personal_access_token: "your-ado-pat-token"
+  project: "your-project-name"
+  query:
+    work_item_types:
+      - "Bug"
+      - "User Story"
+    states:
+      - "New"
+      - "Active"
+    area_paths:
+      - "ProjectName\\Feature1"
+    # Alternative: Use WIQL for complex queries
+    # wiql: "SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'Bug'"
+    # Or specify work item IDs directly
+    # ids: [1, 2, 3, 4]
+```
 
 ### Field Mapping
 
@@ -174,10 +215,16 @@ Automatic checkpoint creation for resume capability:
 
 ### Common Issues
 
-1. **Authentication Failures**
-   - Verify PAT tokens and GitHub app (if applicable) have correct permissions
+1. **PAT Authentication Failures**
+   - Verify PAT tokens have correct permissions
    - Check token expiration dates
    - Ensure organization/repository access
+
+2. **GitHub App Authentication Issues**
+   - Ensure the private key file is in PEM format
+   - Verify the app is installed on the target organization/repository
+   - Check that the installation ID matches the target repository
+   - Confirm the app has the necessary permissions (Issues: Write, Metadata: Read, Pull requests: Write)
 
 2. **Configuration Issues**
    - Verify YAML syntax in config file
@@ -227,9 +274,10 @@ adowi2gh migrate --verbose
 
 ## Known Limitations
 
-- **Attachments and Images**: Work item attachments and embedded images are not migrated
+- **Attachments and Images**: Work item attachments and embedded images are not migrated (this is a current limitation of the tool)
 - **Work Item Links**: Relations between work items are not currently migrated
 - **Rich Formatting**: Some complex HTML formatting may not convert well to Markdown
+- **Large Files**: Work items with very large descriptions or many comments may hit API rate limits
 
 ## Contributing
 

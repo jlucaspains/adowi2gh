@@ -25,7 +25,6 @@ migration:
   batch_size: 25
   dry_run: false
   include_comments: true
-  include_attachments: false
   
   field_mapping:
     state_mapping:
@@ -36,9 +35,7 @@ migration:
     type_mapping:
       "Bug": ["bug"]
       "User Story": ["enhancement"]
-  
-  user_mapping: {}
 
-logging:
-  level: "info"
-  format: "text"
+  user_mapping:
+    "john.doe@company.com": "johndoe"
+    "jane.smith@company.com": "janesmith"

@@ -106,8 +106,12 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("azure_devops.project is required")
 	}
 
-	if config.GitHub.Token == "" {
-		return fmt.Errorf("github.token is required")
+	if config.GitHub.Token == "" && config.GitHub.AppCertificatePath == "" {
+		return fmt.Errorf("github.token or github.app_certificate_path is required")
+	}
+
+	if config.GitHub.AppCertificatePath != "" && (config.GitHub.AppId == 0 || config.GitHub.InstallationId == 0) {
+		return fmt.Errorf("github.app_id and github.installation_id are required when using github.app_certificate_path")
 	}
 
 	if config.GitHub.Owner == "" {

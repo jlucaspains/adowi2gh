@@ -50,11 +50,11 @@ func (m *Mapper) MapWorkItemToIssue(workItem *models.WorkItem) (*models.GitHubIs
 
 func (m *Mapper) mapDescription(workItem *models.WorkItem) string {
 	// TODO: add support for images
-	description := fmt.Sprintf("Issue imported from Azure DevOps [#%d](%s)", workItem.ID, workItem.URL)
-	description += "\n\n" + workItem.GetDescription()
+	importedDescription := fmt.Sprintf("> Issue imported from Azure DevOps [#%d](%s)", workItem.ID, workItem.URL)
+	description := workItem.GetDescription()
 
 	// Clean up HTML if present
-	description = m.cleanHtmlContent(description)
+	description = importedDescription + "\n\n" + m.cleanHtmlContent(description)
 
 	// Add acceptance criteria if present
 	if acceptanceCriteria, ok := workItem.Fields["Microsoft.VSTS.Common.AcceptanceCriteria"].(string); ok && acceptanceCriteria != "" {

@@ -23,10 +23,13 @@ type AzureDevOpsConfig struct {
 }
 
 type GitHubConfig struct {
-	Token      string `yaml:"token"`
-	Owner      string `yaml:"owner"`
-	Repository string `yaml:"repository"`
-	BaseURL    string `yaml:"base_url"` // For GitHub Enterprise
+	Token              string `yaml:"token"`
+	AppCertificatePath string `yaml:"app_certificate_path"`
+	AppId              int64  `yaml:"app_id"`
+	InstallationId     int64  `yaml:"installation_id"`
+	Owner              string `yaml:"owner"`
+	Repository         string `yaml:"repository"`
+	BaseURL            string `yaml:"base_url"` // For GitHub Enterprise
 }
 
 type WorkItemQuery struct {

@@ -14,34 +14,30 @@ This guide will help you set up and run your first migration from Azure DevOps t
    - Personal Access Token with repo permissions
    - Target repository created and accessible
 
-3. **Go Environment** (if building from source)
+3. **Go Environment**
    - Go 1.19 or later installed
    - Basic knowledge of command line
 
 ## Step 1: Installation
 
-### Option A: Build from Source
+### Option A: Go Install
+```bash
+go install github.com/jlucaspains/adowi2gh/cmd/adowi2gh@latest
+```
+
+### Option B: Build from Source
 ```bash
 git clone <repository-url>
 cd adowi2gh
-go build -o build/adowi2gh.exe ./cmd/migrate
-```
-
-### Option B: Use PowerShell Script
-```powershell
-.\scripts\build.ps1 build
-```
-
-### Option C: Use Makefile (requires make)
-```bash
-make build
+go build -o build/adowi2gh ./cmd/migrate
+cd ./build
 ```
 
 ## Step 2: Create Configuration
 
 Initialize a new configuration file:
 ```bash
-.\build\adowi2gh.exe config init
+adowi2gh config init
 ```
 
 This creates `configs/config.yaml` with default settings.
@@ -76,13 +72,25 @@ github:
 5. Under Scopes, select "Work Items (read)"
 6. Click "Create" and copy the token
 
-### GitHub PAT
+### GitHub PAT or GitHub App
+#### Using Personal Access Token
+> Issues created using a PAT will show as created by the PAT owner.
+
 1. Go to GitHub → Settings → Developer settings → Personal access tokens
 2. Click "Generate new token"
 3. Give it a name like "ADO Migration"
 4. Select appropriate expiration date
 5. Under Scopes, select "repo" (Full control of private repositories)
 6. Click "Generate token" and copy the token
+
+#### Using GitHub App
+> Issues created using a GitHub App will show as created by the App.
+
+1. Create a GitHub App in your organization or user account
+2. Assign necessary permissions (Issues: Read & Write)
+3. Install the app on the target repository
+4. Generate a private key and download the `.pem` file
+5. Use the `.pem`, App ID and Installation ID in your configuration
 
 ## Step 5: Configure Work Item Query
 
@@ -156,7 +164,7 @@ user_mapping:
 
 Test your configuration and connections:
 ```bash
-.\build\adowi2gh.exe validate
+adowi2gh validate
 ```
 
 This will verify:
@@ -169,7 +177,7 @@ This will verify:
 
 Preview the migration without making changes:
 ```bash
-.\build\adowi2gh.exe migrate --dry-run --verbose
+adowi2gh migrate --dry-run --verbose
 ```
 
 This shows you:
@@ -181,7 +189,7 @@ This shows you:
 
 If the dry run looks good, run the actual migration:
 ```bash
-.\build\adowi2gh.exe migrate --verbose
+adowi2gh migrate --verbose
 ```
 
 ## Step 11: Review Results

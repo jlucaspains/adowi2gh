@@ -1,0 +1,44 @@
+# Basic Configuration Example
+# Copy this file to configs/config.yaml and update with your settings
+
+azure_devops:
+  organization_url: "https://dev.azure.com/your-organization"
+  personal_access_token: "your-ado-pat-token"
+  project: "your-project-name"
+  
+  query:
+    work_item_types:
+      - "Bug"
+      - "User Story"
+    states:
+      - "New"
+      - "Active"
+      - "Done"
+
+github:
+  token: "your-github-token"
+  owner: "your-github-username"
+  repository: "your-repository"
+  base_url: "https://api.github.com"
+
+migration:
+  batch_size: 25
+  dry_run: false
+  include_comments: true
+  include_attachments: false
+  
+  field_mapping:
+    state_mapping:
+      "New": "open"
+      "Active": "open"
+      "Done": "closed"
+    
+    type_mapping:
+      "Bug": ["bug"]
+      "User Story": ["enhancement"]
+  
+  user_mapping: {}
+
+logging:
+  level: "info"
+  format: "text"

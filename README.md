@@ -23,98 +23,13 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 
 - Go 1.19 or later
 - Azure DevOps Personal Access Token with Work Items (read) permission
-- GitHub Personal Access Token with repository permissions
+- GitHub Personal Access Token or GitHub App with repository permissions
 - Access to both Azure DevOps organization and target GitHub repository
 
-## Installation
-
-### Build from Source
-
-```bash
-git clone <repository-url>
-cd ado-gh-wi-migrator/src
-go build -o ../adowi2gh.exe .
-```
-
-### Using Go Install
-
-```bash
-cd src
-go install .
-```
-
-## Quick Start
-
-1. **Initialize Configuration**
-   ```bash
-   ./adowi2gh config init
-   ```
-
-2. **Edit Configuration**
-   Update `configs/config.yaml` with your Azure DevOps and GitHub settings:
-   ```yaml
-   azure_devops:
-     organization_url: "https://dev.azure.com/your-organization"
-     personal_access_token: "your-ado-pat"
-     project: "your-project"
-     query:
-       # Option 1: Use specific work item types and states
-       work_item_types:
-         - "Bug"
-         - "User Story"
-         - "Task"
-       states:
-         - "New"
-         - "Active"
-         - "Done"
-       # Option 2: Use custom WIQL query
-       # wiql: "SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'Bug'"
-       # Option 3: Use specific work item IDs
-       # ids: [1234, 1235, 1236]
-   
-   github:
-     token: "your-github-token"
-     owner: "your-username"
-     repository: "your-repo"
-     base_url: "https://api.github.com"  # For GitHub Enterprise, use your instance URL
-   ```
-
-3. **Validate Configuration**
-   ```bash
-   ./adowi2gh validate
-   ```
-
-4. **Run Migration**
-   ```bash
-   # Dry run first
-   ./adowi2gh migrate --dry-run
-   
-   # Actual migration
-   ./adowi2gh migrate
-   ```
+## Getting Started
+See the [Getting Started Guide](docs/GETTING_STARTED.md) for detailed setup instructions.
 
 ## Configuration
-
-### Azure DevOps Setup
-
-1. Generate a Personal Access Token:
-   - Go to Azure DevOps → User Settings → Personal Access Tokens
-   - Create new token with "Work Items (read)" scope
-   - Copy the token for configuration
-
-2. Configure work item query (choose one method):
-   - **WIQL Query**: Use custom Work Item Query Language
-   - **Filter by Types and States**: Specify work item types, states, and area paths
-   - **Specific IDs**: Provide a list of specific work item IDs to migrate
-
-### GitHub Setup
-
-1. Generate a Personal Access Token:
-   - Go to GitHub → Settings → Developer settings → Personal access tokens
-   - Create token with "repo" scope
-   - Copy the token for configuration
-
-2. Ensure target repository exists and you have write access
 
 ### Field Mapping
 
@@ -172,19 +87,19 @@ user_mapping:
 
 ```bash
 # Show help
-./adowi2gh --help
+adowi2gh --help
 
 # Show version information
-./adowi2gh version
+adowi2gh version
 
 # Initialize configuration
-./adowi2gh config init
+adowi2gh config init
 
 # Validate configuration and test connections
-./adowi2gh validate
+adowi2gh validate
 
 # Run migration
-./adowi2gh migrate [flags]
+adowi2gh migrate [flags]
 ```
 
 ### Migration Flags
@@ -202,22 +117,22 @@ user_mapping:
 
 ```bash
 # Dry run to preview changes
-./adowi2gh migrate --dry-run
+adowi2gh migrate --dry-run
 
 # Migrate with custom batch size
-./adowi2gh migrate --batch-size 25
+adowi2gh migrate --batch-size 25
 
 # Resume interrupted migration
-./adowi2gh migrate --resume
+adowi2gh migrate --resume
 
 # Use custom config file
-./adowi2gh migrate --config ./custom-config.yaml
+adowi2gh migrate --config ./custom-config.yaml
 
 # Verbose logging with custom report location
-./adowi2gh migrate --verbose --report ./reports/custom-migration.json
+adowi2gh migrate --verbose --report ./reports/custom-migration.json
 
 # Validate configuration with verbose output
-./adowi2gh validate --verbose
+adowi2gh validate --verbose
 ```
 
 ## Migration Process
@@ -260,7 +175,7 @@ Automatic checkpoint creation for resume capability:
 ### Common Issues
 
 1. **Authentication Failures**
-   - Verify PAT tokens have correct permissions
+   - Verify PAT tokens and GitHub app (if applicable) have correct permissions
    - Check token expiration dates
    - Ensure organization/repository access
 
@@ -294,14 +209,7 @@ Automatic checkpoint creation for resume capability:
 
 Enable verbose logging for detailed troubleshooting:
 ```bash
-./adowi2gh migrate --verbose
-```
-
-### Resume Failed Migrations
-
-If migration is interrupted:
-```bash
-./adowi2gh migrate --resume
+adowi2gh migrate --verbose
 ```
 
 ## API Limits and Performance
@@ -321,7 +229,7 @@ If migration is interrupted:
 
 - **Attachments and Images**: Work item attachments and embedded images are not migrated
 - **Work Item Links**: Relations between work items are not currently migrated
-- **Rich Formatting**: Some complex HTML formatting may not convert perfectly to Markdown
+- **Rich Formatting**: Some complex HTML formatting may not convert well to Markdown
 
 ## Contributing
 

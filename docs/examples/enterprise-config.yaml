@@ -2,7 +2,7 @@
 
 azure_devops:
   organization_url: "https://dev.azure.com/company"
-  personal_access_token: "${ADO_PAT}"  # Use environment variable
+  personal_access_token: "ADO_PAT"
   project: "MainProject"
   
   query:
@@ -16,7 +16,7 @@ azure_devops:
       ORDER BY [System.Id]
 
 github:
-  token: "${GITHUB_TOKEN}"  # Use environment variable
+  token: "GITHUB_TOKEN"
   owner: "company-org"
   repository: "main-product"
   base_url: "https://github.company.com/api/v3"  # GitHub Enterprise URL

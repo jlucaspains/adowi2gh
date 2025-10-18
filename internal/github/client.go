@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v74/github"
 	"golang.org/x/oauth2"
 
@@ -20,8 +21,12 @@ type Client struct {
 }
 
 func NewClient(cfg *config.GitHubConfig, logger *slog.Logger) (*Client, error) {
-	if cfg.Token == "" {
-		return nil, fmt.Errorf("GitHub token is required")
+	if cfg.Token == "" && cfg.AppCertificatePath == "" {
+		return nil, fmt.Errorf("GitHub token or GitHub App certificate is required")
+	}
+
+	if cfg.AppCertificatePath != "" && (cfg.AppId == 0 || cfg.InstallationId == 0) {
+		return nil, fmt.Errorf("GitHub App ID and Installation ID are required when using App certificate")
 	}
 
 	if cfg.Owner == "" {
@@ -32,14 +37,25 @@ func NewClient(cfg *config.GitHubConfig, logger *slog.Logger) (*Client, error) {
 		return nil, fmt.Errorf("GitHub repository is required")
 	}
 
-	// Create OAuth2 token source
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: cfg.Token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
+	var tc *http.Client
+	if cfg.Token != "" {
+		// Create OAuth2 token source
+		ctx := context.Background()
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: cfg.Token},
+		)
+		tc = oauth2.NewClient(ctx, ts)
+	}
 
-	// Create GitHub client
+	if cfg.AppCertificatePath != "" {
+		itr, err := ghinstallation.NewKeyFromFile(http.DefaultTransport, cfg.AppId, cfg.InstallationId, cfg.AppCertificatePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create GitHub installation transport: %w", err)
+		}
+
+		tc = &http.Client{Transport: itr}
+	}
+
 	var githubClient *github.Client
 	if cfg.BaseURL != "" && cfg.BaseURL != "https://api.github.com" {
 		// GitHub Enterprise

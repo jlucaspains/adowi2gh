@@ -6,8 +6,7 @@ This directory contains example configuration files for different scenarios.
 
 - `basic-config.yaml` - Basic configuration with minimal settings
 - `enterprise-config.yaml` - Configuration for GitHub Enterprise
-- `advanced-config.yaml` - Advanced configuration with all features enabled
-- `team-migration.yaml` - Configuration for migrating team-specific work items
+- `github-app-config.yaml` - Configuration using GitHub app instead of PAT for authentication
 
 ## Usage
 

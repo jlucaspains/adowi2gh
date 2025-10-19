@@ -1,8 +1,9 @@
 # GitHub Enterprise Configuration Example
+# This example shows configuration for GitHub Enterprise Server
 
 azure_devops:
   organization_url: "https://dev.azure.com/company"
-  personal_access_token: "${ADO_PAT}"  # Use environment variable
+  personal_access_token: "ADO_PAT"
   project: "MainProject"
   
   query:
@@ -16,13 +17,16 @@ azure_devops:
       ORDER BY [System.Id]
 
 github:
-  token: "${GITHUB_TOKEN}"  # Use environment variable
+  token: "GITHUB_TOKEN"
   owner: "company-org"
   repository: "main-product"
   base_url: "https://github.company.com/api/v3"  # GitHub Enterprise URL
 
 migration:
-  batch_size: 30  
+  batch_size: 30
+  dry_run: false
+  include_comments: true
+  
   field_mapping:
     state_mapping:
       "New": "open"
@@ -49,19 +53,12 @@ migration:
       "2 - High": ["severity:high"]
       "3 - Medium": ["severity:medium"]
       "4 - Low": ["severity:low"]
+
+    time_zone: "America/New_York"
+    include_severity_label: true
+    include_area_path_label: true
   
   user_mapping:
     "john.doe@company.com": "john-doe"
     "jane.smith@company.com": "jane-smith"
     "admin@company.com": "admin-user"
-  
-  dry_run: false
-  include_comments: true
-  include_attachments: false
-  create_milestones: true
-  resume_from_checkpoint: false
-
-logging:
-  level: "info"
-  format: "json"
-  output_file: "logs/migration.log"

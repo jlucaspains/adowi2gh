@@ -76,3 +76,6 @@ docs/api.txt
 # Backup files
 *.bak
 *.backup
+
+# GitHub App certificate
+*.pem

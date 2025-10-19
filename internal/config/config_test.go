@@ -160,7 +160,24 @@ func TestValidateConfig(t *testing.T) {
 				},
 			},
 			expectError: true,
-			errorMsg:    "github.token is required",
+			errorMsg:    "github.token or github.app_certificate_path is required",
+		},
+		{
+			name: "missing app id and installation id with app certificate path",
+			config: &Config{
+				AzureDevOps: AzureDevOpsConfig{
+					OrganizationURL:     "https://dev.azure.com/org",
+					PersonalAccessToken: "pat123",
+					Project:             "project",
+				},
+				GitHub: GitHubConfig{
+					Owner:              "owner",
+					Repository:         "repo",
+					AppCertificatePath: "./cert.pem",
+				},
+			},
+			expectError: true,
+			errorMsg:    "github.app_id and github.installation_id are required when using github.app_certificate_path",
 		},
 		{
 			name: "missing GitHub owner",

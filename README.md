@@ -7,6 +7,7 @@ A powerful command-line tool to migrate work items from Azure DevOps to GitHub i
 - **Full Migration Support**: Migrate work items with titles, descriptions, comments, and metadata
 - **Field Mapping**: Configurable mapping of ADO fields to GitHub issue fields
 - **State Management**: Map ADO work item states to GitHub issue states (open/closed)
+- **Type Mapping**: Map ADO work item types to GitHub issue types
 - **Label Generation**: Automatic label creation based on work item type, priority, and tags
 - **User Mapping**: Map ADO users to GitHub usernames for proper assignment
 - **Batch Processing**: Process work items in configurable batches with rate limiting
@@ -84,10 +85,16 @@ field_mapping:
     "Done": "closed"
   
   type_mapping:
-    "Bug": ["bug"]
-    "User Story": ["enhancement"]
-    "Task": ["task"]
+    "bug": ["bug"]
+    "user story": ["enhancement"]
+    "task": ["task"]
   
+  issue_type_mapping:
+    "Bug": "Bug"
+    "Product Backlog Item": "Feature"
+    "Task": "Task"
+    "User Story": "Feature"
+
   priority_mapping:
     "1": ["priority:critical"]
     "2": ["priority:high"]

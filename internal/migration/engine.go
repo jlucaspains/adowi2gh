@@ -130,7 +130,9 @@ func (e *Engine) performDryRun(ctx context.Context, workItems []*models.WorkItem
 		e.logger.Debug("Migration details",
 			"labels", issue.Labels,
 			"assignees", issue.Assignees,
-			"state", issue.State)
+			"state", issue.State,
+		    "type", issue.Type,
+		)
 
 		e.report.SuccessfulCount++
 	}

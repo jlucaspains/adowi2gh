@@ -153,7 +153,7 @@ func (c *Client) buildDefaultQuery() string {
 	}
 
 	if len(c.config.Query.AreaPaths) > 0 {
-		query += " AND [System.AreaPath] UNDER ("
+		query += " AND ([System.AreaPath] UNDER "
 		for i, areaPath := range c.config.Query.AreaPaths {
 			if i > 0 {
 				query += " OR [System.AreaPath] UNDER "

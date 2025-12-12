@@ -53,6 +53,7 @@ type FieldMapping struct {
 	StateMapping         map[string]string   `yaml:"state_mapping"`
 	LabelMapping         map[string][]string `yaml:"label_mapping"`
 	TypeMapping          map[string][]string `yaml:"type_mapping"`
+	IssueTypeMapping     map[string]string   `yaml:"issue_type_mapping"`
 	PriorityMapping      map[string][]string `yaml:"priority_mapping"`
 	TimeZone             string              `yaml:"time_zone"`
 	IncludeSeverityLabel bool                `yaml:"include_severity_label"`

@@ -107,7 +107,14 @@ query:
     - "New"
     - "Active"
     - "Done"
+    - "Closed"
+  area_paths:
+    - "ProjectName\\Feature1"
 ```
+
+Note that `area_paths` includes all items under the specified paths.
+
+If you want to include completed items then you need to add "Done" and "Closed" to the `states` filter. The default configuration only includes active work items.
 
 ### Option B: Custom WIQL Query
 ```yaml
@@ -137,11 +144,16 @@ field_mapping:
     "New": "open"
     "Active": "open"
     "Done": "closed"
-  
+
+  issue_type_mapping:
+    "Bug": "bug"
+    "User Story": "Feature"
+    "Task": "Task"
+
   type_mapping:
-    "Bug": ["bug"]
-    "User Story": ["enhancement", "user-story"]
-    "Task": ["task"]
+    "bug": ["bug"]
+    "user Story": ["enhancement", "user-story"]
+    "task": ["task"]
   
   priority_mapping:
     "1": ["priority:critical"]
@@ -149,6 +161,10 @@ field_mapping:
     "3": ["priority:medium"]
     "4": ["priority:low"]
 ```
+
+`issue_type_mapping` maps to GitHub issue type (single value).
+
+`type_mapping` maps to GitHub labels (may have multiple values).
 
 ## Step 7: Configure User Mapping
 

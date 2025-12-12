@@ -10,6 +10,7 @@ type GitHubIssue struct {
 	Title      string                 `json:"title"`
 	Body       string                 `json:"body"`
 	State      string                 `json:"state"`
+	Type       string                 `json:"type,omitempty"`
 	Labels     []string               `json:"labels"`
 	Assignees  []string               `json:"assignees"`
 	Milestone  *int                   `json:"milestone,omitempty"`

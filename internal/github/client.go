@@ -99,6 +99,10 @@ func (c *Client) CreateIssue(ctx context.Context, issue *models.GitHubIssue) (*m
 		Assignees: &issue.Assignees,
 	}
 
+	if issue.Type != "" {
+		githubIssue.Type = &issue.Type
+	}
+
 	if issue.Milestone != nil {
 		githubIssue.Milestone = issue.Milestone
 	}

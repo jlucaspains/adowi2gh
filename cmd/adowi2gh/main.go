@@ -272,8 +272,8 @@ func createDefaultConfig() *config.Config {
 			Project:             "your-project-name",
 			Query: config.WorkItemQuery{
 				WIQL:          "",
-				WorkItemTypes: []string{"Bug", "User Story", "Task"},
-				States:        []string{"New", "Active", "Resolved"},
+				WorkItemTypes: []string{"Bug", "Epic", "Feature", "Product Backlog Item", "Task", "User Story"},
+				States:        []string{"Active", "New", "Resolved"},
 			},
 		},
 		GitHub: config.GitHubConfig{
@@ -286,17 +286,25 @@ func createDefaultConfig() *config.Config {
 			BatchSize: 50,
 			FieldMapping: config.FieldMapping{
 				StateMapping: map[string]string{
-					"New":      "open",
 					"Active":   "open",
-					"Resolved": "open",
 					"Closed":   "closed",
 					"Done":     "closed",
+					"New":      "open",
+					"Resolved": "open",
 				},
 				TypeMapping: map[string][]string{
-					"Bug":        {"bug"},
-					"User Story": {"enhancement"},
-					"Task":       {"task"},
-					"Epic":       {"epic"},
+					"bug":                  {"bug"},
+					"epic":                 {"epic"},
+					"feature":              {"feature"},
+					"product backlog item": {"enhancement"},
+					"task":                 {"task"},
+					"user story":           {"enhancement"},
+				},
+				IssueTypeMapping: map[string]string{
+					"Bug":                  "Bug",
+					"Product Backlog Item": "Feature",
+					"Task":                 "Task",
+					"User Story":           "Feature",
 				},
 				PriorityMapping: map[string][]string{
 					"1": {"priority:critical"},

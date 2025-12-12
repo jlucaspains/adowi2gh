@@ -35,6 +35,7 @@ func (m *Mapper) MapWorkItemToIssue(workItem *models.WorkItem) (*models.GitHubIs
 		State:      m.mapState(workItem.GetState()),
 		Labels:     m.mapLabels(workItem),
 		Assignees:  m.mapAssignees(workItem),
+		Type:       m.mapIssueType(workItem.GetWorkItemType()),
 	}
 
 	// TODO: is metadata needed?
@@ -132,6 +133,15 @@ func (m *Mapper) mapLabels(workItem *models.WorkItem) []string {
 	labels = m.deduplicateLabels(labels)
 
 	return labels
+}
+
+func (m *Mapper) mapIssueType(workItemType string) string {
+	if m.config.IssueTypeMapping != nil {
+		if githubIssueType, exists := m.config.IssueTypeMapping[workItemType]; exists {
+			return githubIssueType
+		}
+	}
+	return ""
 }
 
 func (m *Mapper) mapAssignees(workItem *models.WorkItem) []string {
